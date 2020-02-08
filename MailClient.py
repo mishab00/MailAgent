@@ -1,11 +1,11 @@
 #!/usr/bin/env python
 #Purpose of this class is to test mail agent can run on same instance
 #command example
-#python3 MailClient.py --host='127.0.0.1' --port=1025 --fromAddress=tester@webname.com --toAddress=test@gmail.com --subject="Hi, Hello" --body="Good to see you all. Keep in touch"
+# python3 MailClient.py --host='127.0.0.1' --port=1025 --fromAddress=tester@safebreach.com --toAddress=test@gmail.com --subject="Hi, Hello" --body="Good to see you all. Keep in touch"
 
-import smtplib
-import email.utils
 import argparse
+import email.utils
+import smtplib
 from email.mime.text import MIMEText
 
 
