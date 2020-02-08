@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # purpose of this class is listen to port and recieve smtp messages
 # example of usage
-# python3 MailAgent.py --host='127.0.0.1' --port=1025
+# python3 MailAgent.py --host='127.0.0.1' --port=1025 to start listen to the specified port
 import argparse
 import asyncore
 import getpass
@@ -15,14 +15,16 @@ from email.mime.text import MIMEText
 
 
 class Config():
-    KNOWN_DOMAIN = "webname.com"
-    TRIGGER_KEYWORD = "banana"
-    TEMP_FILE_PATH = "/root/hello"
+    KNOWN_DOMAIN = 'safebreach.com'
+    TRIGGER_KEYWORD = 'banana'
+    TEMP_FILE_PATH = '/root/hello'
 
     SMTP_SERVER = 'smtp.gmail.com'
     SMTP_PORT = 587
 
-    RESPONSE_EMAIL_FROM = "a@a.com"
+    # TODO to send mail we will need exisitng mail provider
+    RESPONSE_EMAIL_FROM = 'a@a.com'
+    SECRET_PASSWORD = 'secret password'
 
 
 class CustomSMTPServer(smtpd.SMTPServer):
@@ -33,23 +35,23 @@ class CustomSMTPServer(smtpd.SMTPServer):
         print('To  :', rcpttos)
         print('Message :', data)
 
-        if isKnownDomain(mailfrom):
-            msg = processDataAndGetMessage(data)
-            sendEmail(Config.RESPONSE_EMAIL_FROM, "Response from Mail Agent", msg)
+        if is_known_domain(mailfrom):
+            msg = process_data_and_get_message(data)
+            send_email(Config.RESPONSE_EMAIL_FROM, 'Response from Mail Agent', msg)
         return
 
 
 # TODO consider to verify more than just a name
-def isKnownDomain(domain):
+def is_known_domain(domain):
     return Config.KNOWN_DOMAIN in domain
 
 
-def processDataAndGetMessage(mailData):
-    if isKeywordFound(mailData):
-        scriptPath = getMailAttachment(mailData)
+def process_data_and_get_message(mailData):
+    if is_keyword_found(mailData):
+        scriptPath = get_mail_attachment(mailData)
         if os.path.isfile(scriptPath):
             print('File exist')
-            response = executeFileAsPythonScript(scriptPath)
+            response = execute_file_as_python_script(scriptPath)
         else:
             response = 'Attachment missing'
     else:
@@ -57,22 +59,21 @@ def processDataAndGetMessage(mailData):
     return response
 
 
-def isKeywordFound(mailData):
+def is_keyword_found(mailData):
     return Config.TRIGGER_KEYWORD in mailData
 
 
 # TODO find if we have attachments
-def getMailAttachment(mailData):
+def get_mail_attachment(mailData):
     return Config.TEMP_FILE_PATH
 
 
-def executeFileAsPythonScript(scriptPath):
+def execute_file_as_python_script(scriptPath):
     output = subprocess.check_call(scriptPath)
     return output
 
 
-# TODO to send mail we will need exisitng mail provider
-def sendEmail(sender, recipient, subject, message):
+def send_email(sender, recipient, subject, message):
     print(sender)
     print(recipient)
     print(subject)
@@ -83,17 +84,16 @@ def sendEmail(sender, recipient, subject, message):
     msg['To'] = recipient
     msg['From'] = sender
 
-    part = MIMEText('text', "plain")
+    part = MIMEText('text', 'plain')
     part.set_payload(message)
     msg.attach(part)
 
     # create smtp session
     session = smtplib.SMTP(Config.SMTP_SERVER, Config.SMTP_PORT)
-    session.ehlo()
-    session.starttls()
-    session.ehlo
-    password = getpass.getpass(prompt="Enter your Google password: ")
-    session.login(sender, "Secret Password")
+    print(session.ehlo())
+    print(session.starttls())
+    #session.ehlo
+    session.login(sender, Config.SECRET_PASSWORD)
     session.sendmail(sender, recipient, msg.as_string())
     print("Email sent.")
     session.quit()
