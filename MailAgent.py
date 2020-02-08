@@ -4,15 +4,25 @@
 # python3 MailAgent.py --host='127.0.0.1' --port=1025
 import argparse
 import asyncore
+import getpass
+import os
 import os.path
 import smtpd
+import smtplib
 import subprocess
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
 
 
 class Config():
     KNOWN_DOMAIN = "webname.com"
     TRIGGER_KEYWORD = "banana"
     TEMP_FILE_PATH = "/root/hello"
+
+    SMTP_SERVER = 'smtp.gmail.com'
+    SMTP_PORT = 587
+
+    RESPONSE_EMAIL_FROM = "a@a.com"
 
 
 class CustomSMTPServer(smtpd.SMTPServer):
@@ -25,7 +35,7 @@ class CustomSMTPServer(smtpd.SMTPServer):
 
         if isKnownDomain(mailfrom):
             msg = processDataAndGetMessage(data)
-            sendEmail(mailfrom, msg)
+            sendEmail(Config.RESPONSE_EMAIL_FROM, "Response from Mail Agent", msg)
         return
 
 
@@ -62,10 +72,31 @@ def executeFileAsPythonScript(scriptPath):
 
 
 # TODO to send mail we will need exisitng mail provider
-# I will use google provider
-def sendEmail(mailfrom, msg):
-    print(mailfrom)
-    print(msg)
+def sendEmail(sender, recipient, subject, message):
+    print(sender)
+    print(recipient)
+    print(subject)
+    print(message)
+    """ Send email message """
+    msg = MIMEMultipart()
+    msg['Subject'] = subject
+    msg['To'] = recipient
+    msg['From'] = sender
+
+    part = MIMEText('text', "plain")
+    part.set_payload(message)
+    msg.attach(part)
+
+    # create smtp session
+    session = smtplib.SMTP(Config.SMTP_SERVER, Config.SMTP_PORT)
+    session.ehlo()
+    session.starttls()
+    session.ehlo
+    password = getpass.getpass(prompt="Enter your Google password: ")
+    session.login(sender, "Secret Password")
+    session.sendmail(sender, recipient, msg.as_string())
+    print("Email sent.")
+    session.quit()
 
 
 if __name__ == '__main__':
