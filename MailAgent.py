@@ -1,11 +1,18 @@
 #!/usr/bin/env python
-#purpose of this class is listen to port and recieve smtp messages
-#example of usage
-#python3 MailAgent.py --host='127.0.0.1' --port=1025
-import smtpd
-import asyncore
+# purpose of this class is listen to port and recieve smtp messages
+# example of usage
+# python3 MailAgent.py --host='127.0.0.1' --port=1025
 import argparse
+import asyncore
 import os.path
+import smtpd
+import subprocess
+
+
+class Config():
+    KNOWN_DOMAIN = "webname.com"
+    TRIGGER_KEYWORD = "banana"
+    TEMP_FILE_PATH = "/root/hello"
 
 
 class CustomSMTPServer(smtpd.SMTPServer):
@@ -16,19 +23,19 @@ class CustomSMTPServer(smtpd.SMTPServer):
         print('To  :', rcpttos)
         print('Message :', data)
 
-        if (isKnownDomain(mailfrom)):
+        if isKnownDomain(mailfrom):
             msg = processDataAndGetMessage(data)
             sendEmail(mailfrom, msg)
         return
 
 
-# TODO verify domain is meet the policy
+# TODO consider to verify more than just a name
 def isKnownDomain(domain):
-    return True
+    return Config.KNOWN_DOMAIN in domain
 
 
 def processDataAndGetMessage(mailData):
-    if (isKeywordFound(mailData)):
+    if isKeywordFound(mailData):
         scriptPath = getMailAttachment(mailData)
         if os.path.isfile(scriptPath):
             print('File exist')
@@ -40,23 +47,25 @@ def processDataAndGetMessage(mailData):
     return response
 
 
-# TODO parse data and find keyword
 def isKeywordFound(mailData):
-    return True
+    return Config.TRIGGER_KEYWORD in mailData
 
 
 # TODO find if we have attachments
 def getMailAttachment(mailData):
-    return '/path/to/Attachment'
+    return Config.TEMP_FILE_PATH
 
 
-# TODO execute python script and collect output or exception if persist
 def executeFileAsPythonScript(scriptPath):
-    return 'Response or Exception from the script'
+    output = subprocess.check_call(scriptPath)
+    return output
 
 
+# TODO to send mail we will need exisitng mail provider
+# I will use google provider
 def sendEmail(mailfrom, msg):
-    print()
+    print(mailfrom)
+    print(msg)
 
 
 if __name__ == '__main__':
